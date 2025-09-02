@@ -1,6 +1,6 @@
 """
 ChongzhiPro API客户端类
-用于调用 https://chongzhi.pro/ 的充值接口哈哈
+用于调用 https://chongzhi.pro/ 的充值接口
 
 使用示例：
 client = ChongzhiProApiClient()
