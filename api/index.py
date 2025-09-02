@@ -12,9 +12,7 @@ from typing import Dict, Any
 import logging
 from datetime import datetime
 
-# 添加父目录到Python路径，以便导入其他模块
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+# 导入同目录下的模块
 from api_client import ChongzhiProApiClient
 from error_mappings import get_friendly_error_message
 
@@ -253,11 +251,4 @@ def internal_error(error):
     return jsonify({'error': '服务器内部错误'}), 500
 
 
-# Vercel入口点
-def handler(request):
-    """Vercel serverless函数入口"""
-    return app(request.environ, lambda status, headers: None)
 
-
-# 导出app供Vercel使用
-application = app
