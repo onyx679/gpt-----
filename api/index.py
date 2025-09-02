@@ -1,34 +1,37 @@
 """
-GPT充值系统 - Flask主应用
-基于Python Flask框架的GPT充值系统
+GPT充值系统 - Vercel部署版本
+优化的Flask应用，适配Vercel Serverless Functions
 """
 
 from flask import Flask, render_template, request, jsonify, session
 import re
 import json
 import os
+import sys
 from typing import Dict, Any
 import logging
 from datetime import datetime
 
+# 添加父目录到Python路径，以便导入其他模块
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from api_client import ChongzhiProApiClient
-from error_mappings import get_friendly_error_message, map_http_status_error
+from error_mappings import get_friendly_error_message
 
 # 创建Flask应用
-app = Flask(__name__)
+app = Flask(__name__, 
+           template_folder='../templates',
+           static_folder='../static')
 
 # 配置
 app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production')
-app.config['SESSION_TIMEOUT'] = int(os.environ.get('SESSION_TIMEOUT', '1800'))  # 30分钟
+app.config['SESSION_TIMEOUT'] = int(os.environ.get('SESSION_TIMEOUT', '1800'))
 
-# 配置日志
+# Vercel环境只使用控制台日志
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('gpt_recharge.log', encoding='utf-8'),
-        logging.StreamHandler()
-    ]
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[logging.StreamHandler()]
 )
 logger = logging.getLogger(__name__)
 
@@ -45,8 +48,7 @@ def log_api_call(action: str, success: bool, data: Dict = None, error: str = Non
         'timestamp': datetime.now().isoformat(),
         'action': action,
         'success': success,
-        'client_ip': request.remote_addr,
-        'user_agent': request.headers.get('User-Agent', '')
+        'client_ip': request.remote_addr
     }
     
     if error:
@@ -54,10 +56,7 @@ def log_api_call(action: str, success: bool, data: Dict = None, error: str = Non
     if data:
         log_data['data'] = data
     
-    if success:
-        logger.info(f"API调用成功: {json.dumps(log_data, ensure_ascii=False)}")
-    else:
-        logger.error(f"API调用失败: {json.dumps(log_data, ensure_ascii=False)}")
+    logger.info(f"API调用: {json.dumps(log_data, ensure_ascii=False)}")
 
 
 @app.route('/')
@@ -70,11 +69,11 @@ def index():
 def verify_code():
     """验证激活码API"""
     try:
-        data = request.get_json()
-        if not data:
-            return jsonify({'success': False, 'error': '请求数据格式错误'})
-        
-        activation_code = data.get('activation_code', '').strip()
+        if request.is_json:
+            data = request.get_json()
+            activation_code = data.get('activation_code', '').strip() if data else ''
+        else:
+            activation_code = request.form.get('activation_code', '').strip()
         
         if not activation_code:
             return jsonify({'success': False, 'error': '请输入激活码'})
@@ -132,11 +131,11 @@ def verify_code():
 def submit_json():
     """提交JSON Token API"""
     try:
-        data = request.get_json()
-        if not data:
-            return jsonify({'success': False, 'error': '请求数据格式错误'})
-        
-        json_token = data.get('json_token', '').strip()
+        if request.is_json:
+            data = request.get_json()
+            json_token = data.get('json_token', '').strip() if data else ''
+        else:
+            json_token = request.form.get('json_token', '').strip()
         
         if not json_token:
             return jsonify({'success': False, 'error': '请粘贴JSON Token'})
@@ -144,11 +143,9 @@ def submit_json():
         if 'cz_session' not in session:
             return jsonify({'success': False, 'error': '会话失效，请重新验证激活码'})
         
-        # 创建API客户端并提交充值
         client = ChongzhiProApiClient()
         result = client.submit_recharge(session['cz_session'], json_token)
         
-        # 处理错误信息
         if not result.get('success', False):
             error_msg = get_friendly_error_message(
                 result.get('error', '充值失败'), 
@@ -173,11 +170,9 @@ def reuse_record():
         if 'cz_session' not in session:
             return jsonify({'success': False, 'error': '会话失效，请重新验证激活码'})
         
-        # 创建API客户端并复用记录
         client = ChongzhiProApiClient()
         result = client.reuse_record(session['cz_session'])
         
-        # 处理错误信息
         if not result.get('success', False):
             error_msg = get_friendly_error_message(
                 result.get('error', '复用失败'), 
@@ -199,11 +194,11 @@ def reuse_record():
 def update_token():
     """更新Token API"""
     try:
-        data = request.get_json()
-        if not data:
-            return jsonify({'success': False, 'error': '请求数据格式错误'})
-        
-        json_token = data.get('json_token', '').strip()
+        if request.is_json:
+            data = request.get_json()
+            json_token = data.get('json_token', '').strip() if data else ''
+        else:
+            json_token = request.form.get('json_token', '').strip()
         
         if not json_token:
             return jsonify({'success': False, 'error': '请粘贴JSON Token'})
@@ -211,7 +206,6 @@ def update_token():
         if 'cz_session' not in session or 'cz_code' not in session:
             return jsonify({'success': False, 'error': '会话失效，请重新验证激活码'})
         
-        # 创建API客户端并更新Token
         client = ChongzhiProApiClient()
         result = client.update_token_and_recharge(
             session['cz_session'], 
@@ -219,7 +213,6 @@ def update_token():
             json_token
         )
         
-        # 处理错误信息
         if not result.get('success', False):
             error_msg = get_friendly_error_message(
                 result.get('error', '更新失败'), 
@@ -250,31 +243,21 @@ def health_check():
 @app.errorhandler(404)
 def not_found_error(error):
     """404错误处理"""
-    return render_template('error.html', 
-                         error_code=404, 
-                         error_message='页面未找到'), 404
+    return jsonify({'error': '页面未找到'}), 404
 
 
 @app.errorhandler(500)
 def internal_error(error):
     """500错误处理"""
     logger.exception("服务器内部错误")
-    return render_template('error.html', 
-                         error_code=500, 
-                         error_message='服务器内部错误'), 500
+    return jsonify({'error': '服务器内部错误'}), 500
 
 
-@app.before_request
-def before_request():
-    """请求前处理"""
-    # 记录请求日志
-    if request.endpoint and request.endpoint.startswith('api'):
-        logger.info(f"API请求: {request.method} {request.path} - IP: {request.remote_addr}")
+# Vercel入口点
+def handler(request):
+    """Vercel serverless函数入口"""
+    return app(request.environ, lambda status, headers: None)
 
 
-if __name__ == '__main__':
-    # 开发环境运行
-    app.run(debug=True, host='0.0.0.0', port=5000)
-
-
-
+# 导出app供Vercel使用
+application = app

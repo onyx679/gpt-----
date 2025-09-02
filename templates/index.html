@@ -6,6 +6,101 @@
   <title>GPT充值系统</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" />
+  <style>
+    /* 动态强调效果 */
+    .highlight-pulse {
+      animation: highlightPulse 2s ease-in-out infinite;
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+    }
+    
+    @keyframes highlightPulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+        border-color: #3b82f6;
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+        border-color: #1d4ed8;
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+        border-color: #3b82f6;
+      }
+    }
+    
+    /* 输入框聚焦效果 */
+    .input-focus {
+      transition: all 0.3s ease;
+      border: 2px solid #e5e7eb;
+    }
+    
+    .input-focus:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      transform: translateY(-1px);
+    }
+    
+    /* 按钮悬停效果 */
+    .btn-hover {
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn-hover::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+    
+    .btn-hover:hover::before {
+      left: 100%;
+    }
+    
+    .btn-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* 步骤指示器动画 */
+    .step-active {
+      animation: stepGlow 1.5s ease-in-out infinite alternate;
+    }
+    
+    @keyframes stepGlow {
+      from {
+        box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+      }
+      to {
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.8);
+      }
+    }
+    
+    /* 提示文字闪烁 */
+    .hint-blink {
+      animation: hintBlink 2s ease-in-out infinite;
+    }
+    
+    @keyframes hintBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    
+    /* 卡片浮动效果 */
+    .card-float {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card-float:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+  </style>
 </head>
 <body class="min-h-screen bg-gray-100">
   <div class="max-w-2xl mx-auto px-4 py-8">
@@ -33,31 +128,67 @@
     <div id="msg" class="hidden mb-4 px-4 py-3 rounded text-sm"></div>
 
     <!-- Step 1 -->
-    <div id="step1" class="bg-white rounded shadow p-6 mb-6">
-      <h2 class="text-xl font-semibold mb-4"><i class="fa-solid fa-key mr-2"></i>输入激活码</h2>
+    <div id="step1" class="bg-white rounded shadow p-6 mb-6 card-float">
+      <h2 class="text-xl font-semibold mb-4">
+        <i class="fa-solid fa-key mr-2 text-blue-600"></i>输入激活码
+      </h2>
+      <div class="mb-3">
+        <p class="text-sm text-gray-600 hint-blink">
+          <i class="fa-solid fa-lightbulb mr-1 text-yellow-500"></i>
+          请在下方输入框中输入您的激活码
+        </p>
+      </div>
       <form id="formVerify" class="space-y-4">
-        <input id="code" type="text" placeholder="CARD-XXXX-XXXX-XXXX" class="w-full border rounded px-3 py-2" required />
-        <button id="btnVerify" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded">验证</button>
+        <div class="relative">
+          <input id="code" type="text" placeholder="CARD-XXXX-XXXX-XXXX" 
+                 class="w-full input-focus highlight-pulse rounded-lg px-4 py-3 text-lg font-mono text-center tracking-wider" 
+                 required />
+          <div class="absolute right-3 top-1/2 transform -translate-y-1/2">
+            <i class="fa-solid fa-credit-card text-gray-400"></i>
+          </div>
+        </div>
+        <button id="btnVerify" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold btn-hover">
+          <i class="fa-solid fa-search mr-2"></i>验证激活码
+        </button>
       </form>
     </div>
 
     <!-- Step 2 -->
-    <div id="step2" class="hidden bg-white rounded shadow p-6 mb-6">
-      <h2 class="text-xl font-semibold mb-4"><i class="fa-solid fa-user mr-2"></i>用户信息</h2>
-      <div class="bg-gray-50 rounded p-4 mb-4">
+    <div id="step2" class="hidden bg-white rounded shadow p-6 mb-6 card-float">
+      <h2 class="text-xl font-semibold mb-4">
+        <i class="fa-solid fa-user mr-2 text-blue-600"></i>用户信息
+      </h2>
+      <div class="bg-gray-50 rounded-lg p-4 mb-4">
         <div class="flex items-center mb-2">
-          <i class="fa-solid fa-envelope text-gray-500 mr-2"></i>
-          <span id="email" class="text-gray-800"></span>
+          <i class="fa-solid fa-envelope text-blue-500 mr-2"></i>
+          <span id="email" class="text-gray-800 font-medium"></span>
         </div>
         <div class="flex items-center">
-          <i class="fa-solid fa-info-circle text-gray-500 mr-2"></i>
-          <span id="status" class="text-gray-800"></span>
+          <i class="fa-solid fa-info-circle text-green-500 mr-2"></i>
+          <span id="status" class="text-gray-800 font-medium"></span>
         </div>
       </div>
       <div id="newUser" class="hidden">
-        <label class="block text-sm font-medium mb-2"><i class="fa-solid fa-code mr-2"></i>ChatGPT JSON Token</label>
-        <textarea id="json" rows="8" placeholder='粘贴从ChatGPT获取的JSON（含access_token等）' class="w-full border rounded px-3 py-2 font-mono text-sm"></textarea>
-        <button id="btnSubmitJson" class="mt-3 w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded">开始充值</button>
+        <div class="mb-3">
+          <p class="text-sm text-gray-600 hint-blink">
+            <i class="fa-solid fa-lightbulb mr-1 text-yellow-500"></i>
+            请在下方文本框中粘贴从ChatGPT获取的JSON数据
+          </p>
+        </div>
+        <label class="block text-sm font-semibold mb-3 text-gray-700">
+          <i class="fa-solid fa-code mr-2 text-purple-600"></i>ChatGPT JSON Token
+        </label>
+        <div class="relative">
+          <textarea id="json" rows="8" 
+                    placeholder='粘贴从ChatGPT获取的JSON（含access_token等）' 
+                    class="w-full input-focus highlight-pulse rounded-lg px-4 py-3 font-mono text-sm resize-none border-2"></textarea>
+          <div class="absolute top-3 right-3">
+            <i class="fa-solid fa-paste text-gray-400"></i>
+          </div>
+        </div>
+        <button id="btnSubmitJson" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold btn-hover">
+          <i class="fa-solid fa-rocket mr-2"></i>开始充值
+        </button>
       </div>
       <div id="oldUser" class="hidden">
         <div class="text-center mb-4">
@@ -68,7 +199,7 @@
         </div>
 
         <!-- 复用充值按钮 -->
-        <button id="btnReuse" class="w-full py-3 px-6 rounded-lg font-semibold text-white mb-3" style="background: linear-gradient(135deg, #f97316, #ea580c); border: 2px solid #ea580c;">
+        <button id="btnReuse" class="w-full py-3 px-6 rounded-lg font-semibold text-white mb-3 btn-hover" style="background: linear-gradient(135deg, #f97316, #ea580c); border: 2px solid #ea580c;">
           <i class="fa-solid fa-rotate mr-2"></i>复用充值记录
         </button>
 
@@ -79,53 +210,125 @@
 
         <!-- 更新Token区域 -->
         <div id="updateTokenSection" class="hidden">
-          <label class="block text-sm font-medium mb-2"><i class="fa-solid fa-code mr-2"></i>更新 ChatGPT JSON Token</label>
-          <textarea id="updateJson" rows="8" placeholder='粘贴新的ChatGPT JSON Token' class="w-full border rounded px-3 py-2 font-mono text-sm"></textarea>
-          <div class="flex space-x-2 mt-3">
-            <button id="btnUpdateToken" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded">
+          <div class="mb-3">
+            <p class="text-sm text-gray-600 hint-blink">
+              <i class="fa-solid fa-lightbulb mr-1 text-yellow-500"></i>
+              请粘贴新的ChatGPT JSON Token来更新您的账户信息
+            </p>
+          </div>
+          <label class="block text-sm font-semibold mb-3 text-gray-700">
+            <i class="fa-solid fa-code mr-2 text-purple-600"></i>更新 ChatGPT JSON Token
+          </label>
+          <div class="relative">
+            <textarea id="updateJson" rows="8" 
+                      placeholder='粘贴新的ChatGPT JSON Token' 
+                      class="w-full input-focus highlight-pulse rounded-lg px-4 py-3 font-mono text-sm resize-none border-2"></textarea>
+            <div class="absolute top-3 right-3">
+              <i class="fa-solid fa-sync text-gray-400"></i>
+            </div>
+          </div>
+          <div class="flex space-x-3 mt-4">
+            <button id="btnUpdateToken" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold btn-hover">
               <i class="fa-solid fa-upload mr-2"></i>更新Token
             </button>
-            <button id="btnCancelUpdate" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded">取消</button>
+            <button id="btnCancelUpdate" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold btn-hover">
+              <i class="fa-solid fa-times mr-2"></i>取消
+            </button>
           </div>
         </div>
 
         <!-- 显示更新Token按钮 -->
-        <button id="btnShowUpdate" class="w-full py-2 px-4 rounded border border-gray-300 text-gray-700 hover:bg-gray-50">
+        <button id="btnShowUpdate" class="w-full py-3 px-4 rounded-lg border-2 border-gray-300 text-gray-700 hover:bg-gray-50 btn-hover font-semibold">
           <i class="fa-solid fa-edit mr-2"></i>更新Token
         </button>
       </div>
     </div>
 
     <!-- Step 3 -->
-    <div id="step3" class="hidden bg-white rounded shadow p-6">
-      <h2 class="text-xl font-semibold mb-4"><i class="fa-solid fa-flag-checkered mr-2"></i>操作完成</h2>
+    <div id="step3" class="hidden bg-white rounded shadow p-6 card-float">
+      <h2 class="text-xl font-semibold mb-4">
+        <i class="fa-solid fa-flag-checkered mr-2 text-blue-600"></i>操作完成
+      </h2>
 
       <!-- 结果状态显示 -->
       <div id="resultStatus" class="mb-4"></div>
 
       <!-- 详细结果 -->
       <details class="mb-4">
-        <summary class="cursor-pointer text-gray-600 hover:text-gray-800">查看详细结果</summary>
-        <pre id="result" class="bg-gray-50 rounded p-4 text-sm overflow-auto mt-2 max-h-64"></pre>
+        <summary class="cursor-pointer text-gray-600 hover:text-gray-800 font-medium">
+          <i class="fa-solid fa-info-circle mr-1"></i>查看详细结果
+        </summary>
+        <pre id="result" class="bg-gray-50 rounded-lg p-4 text-sm overflow-auto mt-3 max-h-64 border"></pre>
       </details>
 
-      <button id="btnReset" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded">
+      <button id="btnReset" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold btn-hover">
         <i class="fa-solid fa-refresh mr-2"></i>重新开始
       </button>
+    </div>
+    
+    <!-- 客服联系信息 -->
+    <div class="mt-12 text-center border-t pt-8">
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold mb-4 text-gray-800">
+          <i class="fa-solid fa-headset mr-2 text-blue-600"></i>
+          客服联系方式
+        </h3>
+        <div class="space-y-3">
+          <p class="text-gray-600">
+            <i class="fa-brands fa-weixin mr-2 text-green-500"></i>
+            <strong>微信客服：</strong>
+            <span class="font-mono text-blue-600">aiplus6688</span>
+          </p>
+          <div class="text-sm text-gray-500 border-t pt-3">
+            <p class="mb-1">💡 我们提供以下服务：</p>
+            <div class="flex flex-wrap justify-center gap-2">
+              <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">ChatGPT Pro充值</span>
+              <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">Grok 4充值</span>
+              <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Grok Heavy充值</span>
+              <span class="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs">广告合作</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
   <script>
     const $ = (id) => document.getElementById(id);
     const setStep = (n) => {
-      $('dot1').className = 'w-8 h-8 rounded-full ' + (n>=1?'bg-blue-600 text-white':'bg-gray-300 text-gray-700') + ' flex items-center justify-center font-semibold';
-      $('dot2').className = 'w-8 h-8 rounded-full ' + (n>=2?'bg-blue-600 text-white':'bg-gray-300 text-gray-700') + ' flex items-center justify-center font-semibold';
-      $('dot3').className = 'w-8 h-8 rounded-full ' + (n>=3?'bg-blue-600 text-white':'bg-gray-300 text-gray-700') + ' flex items-center justify-center font-semibold';
+      // 更新步骤指示器
+      $('dot1').className = 'w-8 h-8 rounded-full ' + (n>=1?'bg-blue-600 text-white step-active':'bg-gray-300 text-gray-700') + ' flex items-center justify-center font-semibold';
+      $('dot2').className = 'w-8 h-8 rounded-full ' + (n>=2?'bg-blue-600 text-white step-active':'bg-gray-300 text-gray-700') + ' flex items-center justify-center font-semibold';
+      $('dot3').className = 'w-8 h-8 rounded-full ' + (n>=3?'bg-blue-600 text-white step-active':'bg-gray-300 text-gray-700') + ' flex items-center justify-center font-semibold';
       $('line1').className = 'w-10 h-1 ' + (n>=2?'bg-blue-600':'bg-gray-300');
       $('line2').className = 'w-10 h-1 ' + (n>=3?'bg-blue-600':'bg-gray-300');
+      
+      // 显示/隐藏步骤
       $('step1').classList.toggle('hidden', n!==1);
       $('step2').classList.toggle('hidden', n!==2);
       $('step3').classList.toggle('hidden', n!==3);
+      
+      // 管理输入框的强调效果
+      if (n === 1) {
+        // 激活码输入框开始脉冲
+        $('code').classList.add('highlight-pulse');
+      } else {
+        $('code').classList.remove('highlight-pulse');
+      }
+      
+      if (n === 2) {
+        // JSON输入框开始脉冲（延迟一下让用户看到用户信息）
+        setTimeout(() => {
+          const jsonInput = $('json');
+          const updateJsonInput = $('updateJson');
+          if (jsonInput && !jsonInput.closest('#newUser').classList.contains('hidden')) {
+            jsonInput.classList.add('highlight-pulse');
+          }
+          if (updateJsonInput && !updateJsonInput.closest('#updateTokenSection').classList.contains('hidden')) {
+            updateJsonInput.classList.add('highlight-pulse');
+          }
+        }, 1000);
+      }
     };
     const showMsg = (t, ok=false)=>{ const b=$('msg'); b.classList.remove('hidden'); b.className='mb-4 px-4 py-3 rounded text-sm '+(ok?'bg-green-100 text-green-800':'bg-red-100 text-red-800'); b.textContent=t; };
     const hideMsg = ()=>$('msg').classList.add('hidden');
@@ -160,6 +363,64 @@
       $('result').textContent = JSON.stringify(data, null, 2);
     };
 
+    // 格式化激活码输入
+    $('code').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/[^A-Z0-9]/g, '').toUpperCase();
+      let formatted = '';
+      
+      if (value.length > 0) {
+        if (!value.startsWith('CARD')) {
+          if (value.length <= 4) {
+            formatted = 'CARD';
+            if (value) formatted += '-' + value;
+          } else {
+            formatted = 'CARD-' + value.substring(0, 4);
+            if (value.length > 4) {
+              formatted += '-' + value.substring(4, 8);
+              if (value.length > 8) {
+                formatted += '-' + value.substring(8, 12);
+              }
+            }
+          }
+        } else {
+          const parts = value.split('');
+          formatted = 'CARD';
+          let remaining = value.substring(4);
+          if (remaining.length > 0) {
+            formatted += '-' + remaining.substring(0, 4);
+            if (remaining.length > 4) {
+              formatted += '-' + remaining.substring(4, 8);
+              if (remaining.length > 8) {
+                formatted += '-' + remaining.substring(8, 12);
+              }
+            }
+          }
+        }
+      }
+      
+      e.target.value = formatted;
+    });
+
+    // API调用函数
+    async function apiCall(endpoint, data = {}) {
+      const formData = new FormData();
+      formData.append('ajax', '1');
+      for (const [key, value] of Object.entries(data)) {
+        formData.append(key, value);
+      }
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('网络错误');
+      }
+
+      return await response.json();
+    }
+
     // Step1: 验证
     $('formVerify').addEventListener('submit', async (e)=>{
       e.preventDefault(); hideMsg();
@@ -170,12 +431,11 @@
       btn.textContent = '验证中...';
       
       try{
-        const r = await fetch('/api/verify-code', {
-          method: 'POST', 
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({activation_code: code})
+        const j = await apiCall('/api/verify-code', {
+          action: 'verify_code',
+          activation_code: code
         });
-        const j = await r.json();
+        
         if(!j.success){ showMsg(j.error||'验证失败'); return; }
         $('email').textContent = j.email || '（无邮箱）';
         $('status').textContent = '状态：'+(j.status||'未知');
@@ -201,19 +461,17 @@
       btn.textContent = '充值中...';
 
       try{
-        const r=await fetch('/api/submit-json',{
-          method:'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({json_token: json})
+        const j = await apiCall('/api/submit-json', {
+          action: 'submit_json',
+          json_token: json
         });
-        const j=await r.json();
         showResult(j);
         setStep(3);
       }catch(err){
         showMsg('网络错误：'+err.message);
       } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-rocket mr-2"></i>开始充值';
+        btn.textContent = '开始充值';
       }
     });
 
@@ -227,12 +485,9 @@
       btn.textContent = '处理中...';
 
       try{
-        const r=await fetch('/api/reuse-record',{
-          method:'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({})
+        const j = await apiCall('/api/reuse-record', {
+          action: 'reuse_record'
         });
-        const j=await r.json();
         showResult(j);
         setStep(3);
       }catch(err){
@@ -247,6 +502,10 @@
     $('btnShowUpdate').addEventListener('click', ()=>{
       $('updateTokenSection').classList.remove('hidden');
       $('btnShowUpdate').classList.add('hidden');
+      // 为更新Token输入框添加脉冲效果
+      setTimeout(() => {
+        $('updateJson').classList.add('highlight-pulse');
+      }, 300);
     });
 
     // 取消更新Token
@@ -254,6 +513,8 @@
       $('updateTokenSection').classList.add('hidden');
       $('btnShowUpdate').classList.remove('hidden');
       $('updateJson').value = '';
+      // 移除脉冲效果
+      $('updateJson').classList.remove('highlight-pulse');
     });
 
     // 更新Token
@@ -268,12 +529,10 @@
       btn.textContent = '更新中...';
 
       try{
-        const r = await fetch('/api/update-token',{
-          method:'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({json_token: json})
+        const j = await apiCall('/api/update-token', {
+          action: 'update_token',
+          json_token: json
         });
-        const j = await r.json();
         showResult(j);
         setStep(3);
       }catch(err){
@@ -299,6 +558,3 @@
   </script>
 </body>
 </html>
-
-
-
