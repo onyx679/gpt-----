@@ -140,7 +140,7 @@
       </div>
       <form id="formVerify" class="space-y-4">
         <div class="relative">
-          <input id="code" type="text" placeholder="CARD-XXXX-XXXX-XXXX" 
+          <input id="code" type="text" placeholder="XXXX-XXXX-XXXX[-XXXX]" 
                  class="w-full input-focus highlight-pulse rounded-lg px-4 py-3 text-lg font-mono text-center tracking-wider" 
                  required />
           <div class="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -363,42 +363,14 @@
       $('result').textContent = JSON.stringify(data, null, 2);
     };
 
-    // 格式化激活码输入
+    // 格式化激活码输入：仅按每4位插入“-”，不强制前缀；最多4段
     $('code').addEventListener('input', function(e) {
       let value = e.target.value.replace(/[^A-Z0-9]/g, '').toUpperCase();
-      let formatted = '';
-      
-      if (value.length > 0) {
-        if (!value.startsWith('CARD')) {
-          if (value.length <= 4) {
-            formatted = 'CARD';
-            if (value) formatted += '-' + value;
-          } else {
-            formatted = 'CARD-' + value.substring(0, 4);
-            if (value.length > 4) {
-              formatted += '-' + value.substring(4, 8);
-              if (value.length > 8) {
-                formatted += '-' + value.substring(8, 12);
-              }
-            }
-          }
-        } else {
-          const parts = value.split('');
-          formatted = 'CARD';
-          let remaining = value.substring(4);
-          if (remaining.length > 0) {
-            formatted += '-' + remaining.substring(0, 4);
-            if (remaining.length > 4) {
-              formatted += '-' + remaining.substring(4, 8);
-              if (remaining.length > 8) {
-                formatted += '-' + remaining.substring(8, 12);
-              }
-            }
-          }
-        }
+      const groups = [];
+      for (let i = 0; i < Math.min(value.length, 16); i += 4) {
+        groups.push(value.substring(i, i + 4));
       }
-      
-      e.target.value = formatted;
+      e.target.value = groups.join('-');
     });
 
     // API调用函数

@@ -36,7 +36,9 @@ logger = logging.getLogger(__name__)
 
 def validate_activation_code(code: str) -> bool:
     """验证激活码格式"""
-    pattern = r'^CARD-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$'
+    # 允许可选前缀（例如 CARD- 或其他），并允许 3 段或 4 段，每段 4 位字母或数字
+    # 示例可通过：QWER-XDKO-DWJN-R21Q、CARD-QWER-XDKO-DWJN、VIP-ABCD-EF12-3456
+    pattern = r'^(?:[A-Z]+-)?[A-Z0-9]{4}(?:-[A-Z0-9]{4}){2,3}$'
     return bool(re.match(pattern, code, re.IGNORECASE))
 
 
