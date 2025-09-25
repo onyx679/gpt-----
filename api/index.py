@@ -79,7 +79,7 @@ def verify_code():
             return jsonify({'success': False, 'error': '请输入激活码'})
         
         if not validate_activation_code(activation_code):
-            return jsonify({'success': False, 'error': '激活码格式不正确'})
+            return jsonify({'success': False, 'error': '激活码格式不正确。请输入3-4段格式的激活码，例如：XXXX-XXXX-XXXX-XXXX'})
         
         # 创建API客户端
         client = ChongzhiProApiClient()
